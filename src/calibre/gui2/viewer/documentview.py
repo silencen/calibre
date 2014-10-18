@@ -3,8 +3,10 @@ __license__   = 'GPL v3'
 __copyright__ = '2008, Kovid Goyal kovid@kovidgoyal.net'
 __docformat__ = 'restructuredtext en'
 
+currentText = ""
+
 # Imports {{{
-import os, math, json
+import os, math, json, re, urllib2
 from base64 import b64encode
 from functools import partial
 
@@ -42,6 +44,27 @@ def apply_settings(settings, opts):
     settings.setFontFamily(QWebSettings.FixedFont, opts.mono_family)
     settings.setAttribute(QWebSettings.ZoomTextOnly, True)
 
+def getPlayersForKeyword(keyword):
+    #clean up keyword
+    keyword = re.sub("(\'s|\'d|\.|,|\?|!|;|,)","",keyword)
+    keyword = re.sub("(~ |~|_)"," ",keyword)
+    keyword = keyword.strip()
+    #grab info from REST API
+    url = "http://smartsign.imtc.gatech.edu/videos?keywords=" + keyword
+    response = urllib2.urlopen(url)
+    #convert JSON to Python object
+    info = json.load(response)
+    #pull ids from converted JSON
+    ids = []
+    for item in info:
+        ids.append(item["id"])
+    #use ids to build a list of embedded players
+    players = []
+    for i in ids:
+        players.append('<iframe width="640" height="360" align:right src="http://www.youtube.com/embed/' + i + '?rel=0"> </iframe>')
+    print("keyword is: "+keyword)
+    #print("list of players: "+str(players))
+    return players
 
 class Document(QWebPage):  # {{{
 
@@ -629,6 +652,9 @@ class DocumentView(QWebView):  # {{{
         return self.document.bookmark()
 
     def selection_changed(self):
+        #store currently selected text
+        global currentText
+        currentText = self.document.selectedText()
         if self.manager is not None:
             self.manager.selection_changed(unicode(self.document.selectedText()))
 
