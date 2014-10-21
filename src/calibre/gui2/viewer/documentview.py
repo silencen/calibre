@@ -7,6 +7,7 @@ currentText = ""
 
 # Imports {{{
 import os, math, json, re, urllib2
+from multiprocessing import Pool
 from base64 import b64encode
 from functools import partial
 
@@ -64,6 +65,7 @@ def getPlayersForKeyword(keyword):
         players.append('<iframe width="640" height="360" align:right src="http://www.youtube.com/embed/' + i + '?rel=0"> </iframe>')
     print("keyword is: "+keyword)
     #print("list of players: "+str(players))
+    print(len(players))
     return players
 
 class Document(QWebPage):  # {{{
@@ -655,6 +657,10 @@ class DocumentView(QWebView):  # {{{
         #store currently selected text
         global currentText
         currentText = self.document.selectedText()
+        #do this asyncronously
+        pool = Pool(processes=1)
+        pool.apply_async(getPlayersForKeyword,currentText)
+        #getPlayersForKeyword(currentText)
         if self.manager is not None:
             self.manager.selection_changed(unicode(self.document.selectedText()))
 
