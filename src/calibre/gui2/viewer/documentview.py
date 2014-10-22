@@ -3,8 +3,6 @@ __license__   = 'GPL v3'
 __copyright__ = '2008, Kovid Goyal kovid@kovidgoyal.net'
 __docformat__ = 'restructuredtext en'
 
-currentText = ""
-
 # Imports {{{
 import os, math, json, re, urllib2
 from multiprocessing import Pool
@@ -517,7 +515,6 @@ class DocumentView(QWebView):  # {{{
     magnification_changed = pyqtSignal(object)
     DISABLED_BRUSH = QBrush(Qt.lightGray, Qt.Dense5Pattern)
     gesture_handler = lambda s, e: False
-    currentText = ""
 
     def initialize_view(self, debug_javascript=False):
         self.setRenderHints(QPainter.Antialiasing|QPainter.TextAntialiasing|QPainter.SmoothPixmapTransform)
@@ -655,11 +652,6 @@ class DocumentView(QWebView):  # {{{
         return self.document.bookmark()
 
     def selection_changed(self):
-        #store currently selected text
-        global currentText
-        currentText = self.document.selectedText()
-        #do this asyncronously
-        #getPlayersForKeyword(currentText)
         if self.manager is not None:
             self.manager.selection_changed(unicode(self.document.selectedText()))
 
@@ -1340,6 +1332,7 @@ class DocumentView(QWebView):  # {{{
         if self.manager is not None:
             prev_pos = self.manager.update_page_number()
         ret = QWebView.mouseReleaseEvent(self, ev)
+        currentText = self.document.selectedText()
         if currentText!="":
             getPlayersForKeyword(currentText)
         if self.manager is not None and opos != self.document.ypos:
