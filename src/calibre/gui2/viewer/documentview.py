@@ -5,7 +5,6 @@ __docformat__ = 'restructuredtext en'
 
 # Imports {{{
 import os, math, json, re, urllib2
-from multiprocessing import Pool
 from base64 import b64encode
 from functools import partial
 
