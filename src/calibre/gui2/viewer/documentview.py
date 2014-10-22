@@ -517,6 +517,7 @@ class DocumentView(QWebView):  # {{{
     magnification_changed = pyqtSignal(object)
     DISABLED_BRUSH = QBrush(Qt.lightGray, Qt.Dense5Pattern)
     gesture_handler = lambda s, e: False
+    currentText = ""
 
     def initialize_view(self, debug_javascript=False):
         self.setRenderHints(QPainter.Antialiasing|QPainter.TextAntialiasing|QPainter.SmoothPixmapTransform)
@@ -658,8 +659,6 @@ class DocumentView(QWebView):  # {{{
         global currentText
         currentText = self.document.selectedText()
         #do this asyncronously
-        pool = Pool(processes=1)
-        pool.apply_async(getPlayersForKeyword,currentText)
         #getPlayersForKeyword(currentText)
         if self.manager is not None:
             self.manager.selection_changed(unicode(self.document.selectedText()))
@@ -1341,6 +1340,8 @@ class DocumentView(QWebView):  # {{{
         if self.manager is not None:
             prev_pos = self.manager.update_page_number()
         ret = QWebView.mouseReleaseEvent(self, ev)
+        if currentText!="":
+            getPlayersForKeyword(currentText)
         if self.manager is not None and opos != self.document.ypos:
             self.manager.scrolled(self.scroll_fraction)
             self.manager.internal_link_clicked(prev_pos)
