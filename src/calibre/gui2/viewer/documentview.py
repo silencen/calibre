@@ -1333,7 +1333,10 @@ class DocumentView(QWebView):  # {{{
         ret = QWebView.mouseReleaseEvent(self, ev)
         currentText = self.document.selectedText()
         if currentText!="":
-            getPlayersForKeyword(currentText)
+            self.bridge_value = getPlayersForKeyword(currentText)
+        else:
+            self.bridge_value = None
+        self.document.javascript("""function showVideos(){idArray=py_bridge.value;var htmlString='<div style="width:100%;position=absolute;text-align:right"> <div style="position:relative;left:54%;width:640px;text-align:left;">';for(var k=0; k<idArray.length; k++) {htmlString += idArray[k];}$('#lightbox').html(htmlString + '</div></div>').css({"line-height":($(window).height()*0)+"px", "overflow":"auto", "display":"block"}).fadeIn('fast').live('click',function(){$(this).fadeOut('fast');$('#searchwindow').show();});}""")
         if self.manager is not None and opos != self.document.ypos:
             self.manager.scrolled(self.scroll_fraction)
             self.manager.internal_link_clicked(prev_pos)
