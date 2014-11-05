@@ -44,12 +44,20 @@ def apply_settings(settings, opts):
 
 def getPlayersForKeyword(keyword):
     #clean up keyword
-    keyword = re.sub("(\'s|\'d|\.|,|\?|!|;|,)","",keyword)
+    keyword = re.sub("(\'s|\'d|\.|,|\?|!|;|,|\")","",keyword)
+    #more complicated stuff to match unicode apostrophes and quotation marks
+    keyword = re.sub(ur'([\u2019]s|[\u2019]d|[\u201D]|[\u201C])',"",keyword)
     keyword = re.sub("(~ |~|_)"," ",keyword)
     keyword = keyword.strip()
     #grab info from REST API
+    if keyword == "":
+        return []
     url = "http://smartsign.imtc.gatech.edu/videos?keywords=" + keyword
-    response = urllib2.urlopen(url)
+    try:
+        response = urllib2.urlopen(url)
+    except:
+        print("unable to connect to url: "+url)
+        return []
     #convert JSON to Python object
     info = json.load(response)
     #pull ids from converted JSON
