@@ -232,6 +232,7 @@ class Document(QWebPage):  # {{{
         for pl in self.all_viewer_plugins:
             pl.load_javascript(evaljs)
         evaljs('py_bridge.mark_element.connect(window.calibre_extract.mark)')
+	evaljs("""$('body').append('<div id="lightbox" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%background:rgba(0,0,0,0.6);text-align:center;z-idex:9999"></div>');""")
 
     @pyqtSlot()
     def animated_scroll_done(self):
@@ -1341,11 +1342,13 @@ class DocumentView(QWebView):  # {{{
         ret = QWebView.mouseReleaseEvent(self, ev)
         currentText = self.document.selectedText()
         if currentText!="":
-            self.bridge_value = getPlayersForKeyword(currentText)
+            self.document.bridge_value = getPlayersForKeyword(currentText)
         else:
-            self.bridge_value = None
-        self.page().mainFrame().evaluateJavaScript("""idArray=py_bridge.value;var htmlString='<div style="width:100%;position=absolute;text-align:right"> <div style="position:relative;left:54%;width:640px;text-align:left;">';for(var k=0; k<idArray.length; k++) {htmlString += idArray[k];}$('#lightbox').html(htmlString + '</div></div>').css({"line-height":($(window).height()*0)+"px", "overflow":"auto", "display":"block"}).fadeIn('fast').live('click',function(){$(this).fadeOut('fast');$('#searchwindow').show();});""")
-        if self.manager is not None and opos != self.document.ypos:
+            self.document.bridge_value = None
+	print(self.document.bridge_value)
+	print(self.page().mainFrame().evaluateJavaScript(u"""var idArray=py_bridge.value;var htmlString='<div style="width:100%;position=absolute;text-align:right"> <div style="position:relative;left:54%;width:640px;text-align:left;">';for(var k=0; k<idArray.length; k++) {htmlString += idArray[k];}$('#lightbox').html(htmlString + '</div></div>').css({"line-height":($(window).height()*0)+"px", "overflow":"auto", "display":"block"}).fadeIn('fast').live('click',function(){$(this).fadeOut('fast');});"""))
+        #print(self.page().mainFrame().evaluateJavaScript("1"))
+	if self.manager is not None and opos != self.document.ypos:
             self.manager.scrolled(self.scroll_fraction)
             self.manager.internal_link_clicked(prev_pos)
         return ret
