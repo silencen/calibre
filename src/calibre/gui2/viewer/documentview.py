@@ -4,7 +4,7 @@ __copyright__ = '2008, Kovid Goyal kovid@kovidgoyal.net'
 __docformat__ = 'restructuredtext en'
 
 # Imports {{{
-import os, math, json, re, urllib2, webbrowser
+import os, math, json, re, urllib2, webbrowser, tempfile
 from base64 import b64encode
 from functools import partial
 
@@ -1344,10 +1344,12 @@ class DocumentView(QWebView):  # {{{
         currentText = self.document.selectedText()
         if currentText!="":
             players = getPlayersForKeyword(currentText)
-            f = open("temp.html","w")
+            #f = tempfile.NamedTemporaryFile(suffix=".html",delete=False)
+            f = open(tempfile.gettempdir()+"/temp.html","w")
             f.write(players)
+            temp = f.name
             f.close()
-            webbrowser.open_new_tab("temp.html")
+            webbrowser.open(temp,2,True)
         if self.manager is not None and opos != self.document.ypos:
             self.manager.scrolled(self.scroll_fraction)
             self.manager.internal_link_clicked(prev_pos)
