@@ -4,7 +4,7 @@ __copyright__ = '2008, Kovid Goyal kovid@kovidgoyal.net'
 __docformat__ = 'restructuredtext en'
 
 # Imports {{{
-import os, math, json, re, urllib2
+import os, math, json, re, urllib2, webbrowser
 from base64 import b64encode
 from functools import partial
 
@@ -65,12 +65,14 @@ def getPlayersForKeyword(keyword):
     for item in info:
         ids.append(item["id"])
     #use ids to build a list of embedded players
-    players = []
+    players = "<h1>"
     for i in ids:
-        players.append('<iframe width="640" height="360" align:right src="http://www.youtube.com/embed/' + i + '?rel=0"> </iframe>')
+        players+='<iframe width="640" height="360" align:right src="http://www.youtube.com/embed/' + i + '?rel=0"> </iframe>'
     print("keyword is: "+keyword)
     #print("list of players: "+str(players))
     print(len(players))
+    players += "</h1>"
+    
     return players
 
 class Document(QWebPage):  # {{{
@@ -1341,7 +1343,11 @@ class DocumentView(QWebView):  # {{{
         ret = QWebView.mouseReleaseEvent(self, ev)
         currentText = self.document.selectedText()
         if currentText!="":
-            getPlayersForKeyword(currentText)
+            players = getPlayersForKeyword(currentText)
+            f = open("temp.html","w")
+            f.write(players)
+            f.close()
+            webbrowser.open_new_tab("temp.html")
         if self.manager is not None and opos != self.document.ypos:
             self.manager.scrolled(self.scroll_fraction)
             self.manager.internal_link_clicked(prev_pos)
