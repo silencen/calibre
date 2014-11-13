@@ -63,11 +63,20 @@ def getPlayersForKeyword(keyword):
     #pull ids from converted JSON
     ids = []
     for item in info:
-        ids.append(item["id"])
+        keywords = item["keywords"]
+        #default rank for unranked videos
+        rank = 999
+        for keyword in keywords:
+            if keyword.find("{") != -1:
+                rank = int(keyword.strip("{}"))
+
+        ids.append((item["id"],rank))
     #use ids to build a list of embedded players
     players = "<h1>"
+    #sort using rank
+    ids = sorted(ids,key=lambda id: id[1])
     for i in ids:
-        players+='<iframe width="640" height="360" align:right src="http://www.youtube.com/embed/' + i + '?rel=0"> </iframe>'
+        players+='<iframe width="640" height="360" align:right src="http://www.youtube.com/embed/' + i[0] + '?rel=0"> </iframe>'
     print("keyword is: "+keyword)
     #print("list of players: "+str(players))
     print(len(players))
