@@ -69,7 +69,6 @@ def getPlayersForKeyword(keyword):
         for keyword in keywords:
             if keyword.find("{") != -1:
                 rank = int(keyword.strip("{}"))
-
         ids.append((item["id"],rank))
     #use ids to build a list of embedded players
     players = "<h1>"
