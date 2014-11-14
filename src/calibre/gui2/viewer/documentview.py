@@ -43,22 +43,23 @@ def apply_settings(settings, opts):
     settings.setAttribute(QWebSettings.ZoomTextOnly, True)
 
 def getPlayersForKeyword(keyword):
+    #replace unicode apostrophes and quotation marks in keyword
+    keyword = re.sub(ur'([\u2018]|[\u2019])',"'",keyword)
+    keyword = re.sub(ur'([\u201D]|[\u201C])',"\"",keyword)
     #clean up keyword
-    keyword = re.sub("(\'s|\'d|\.|,|\?|!|;|,|\")","",keyword)
-    #more complicated stuff to match unicode apostrophes and quotation marks
-    keyword = re.sub(ur'([\u2019]s|[\u2019]d|[\u201D]|[\u201C])',"",keyword)
+    keyword = re.sub("(\'s|\'d|\.|,|\?|!|;|,|\"|:|\(|\))","",keyword)
     keyword = re.sub("(~ |~|_)"," ",keyword)
-    #keyword = keyword.strip(ur"[\u2019]\'")
+    keyword = keyword.strip("'")
     keyword = keyword.strip()
     #grab info from REST API
     if keyword == "":
-        return []
+        return ""
     url = "http://smartsign.imtc.gatech.edu/videos?keywords=" + keyword
     try:
         response = urllib2.urlopen(url)
     except:
         print("unable to connect to url: "+url)
-        return []
+        return ""
     #convert JSON to Python object
     info = json.load(response)
     #pull ids from converted JSON
@@ -78,11 +79,12 @@ def getPlayersForKeyword(keyword):
     for i in ids:
         players+='<iframe width="640" height="360" align:right src="http://www.youtube.com/embed/' + i[0] + '?rel=0"> </iframe>'
     print("keyword is: "+keyword)
-    #print("list of players: "+str(players))
-    print(len(players))
+    print(len(ids))
     players += "</h1>"
-    
-    return players
+    if len(ids)>0:
+        return players
+    else:
+        return ""
 
 class Document(QWebPage):  # {{{
 
@@ -1351,9 +1353,10 @@ class DocumentView(QWebView):  # {{{
             prev_pos = self.manager.update_page_number()
         ret = QWebView.mouseReleaseEvent(self, ev)
         currentText = self.document.selectedText()
+        players = ""
         if currentText!="":
             players = getPlayersForKeyword(currentText)
-            #f = tempfile.NamedTemporaryFile(suffix=".html",delete=False)
+        if players!="":
             f = open(tempfile.gettempdir()+"/temp.html","w")
             f.write(players)
             temp = f.name
