@@ -4,7 +4,7 @@ __copyright__ = '2008, Kovid Goyal kovid@kovidgoyal.net'
 __docformat__ = 'restructuredtext en'
 
 # Imports {{{
-import os, math, json, re, urllib2, webbrowser, tempfile, platform
+import os, math, json, re, urllib2, webbrowser, tempfile, platform, sys
 from base64 import b64encode
 from functools import partial
 
@@ -13,6 +13,8 @@ from PyQt5.Qt import (QSize, QSizePolicy, QUrl, Qt, pyqtProperty,
         QIcon, QAction, QMenu, pyqtSignal, QApplication, pyqtSlot)
 from PyQt5.QtWebKitWidgets import QWebPage, QWebView
 from PyQt5.QtWebKit import QWebSettings, QWebElement
+
+from PyQt5 import QtWidgets
 
 from calibre.gui2.viewer.flip import SlideFlip
 from calibre.gui2.shortcuts import Shortcuts
@@ -620,6 +622,14 @@ class DocumentView(QWebView):  # {{{
         self.restore_fonts_action = QAction(_('Default font size'), self)
         self.restore_fonts_action.setCheckable(True)
         self.restore_fonts_action.triggered.connect(self.restore_font_size)
+        self.driver = webdriver.Firefox()
+        self.app = QtWidgets.QApplication(sys.argv)
+        screen_rect = self.app.desktop().screenGeometry()
+        width, height = screen_rect.width(), screen_rect.height()
+        # Resize the window to the screen width/height
+        self.driver.set_window_size(width/2, height)
+        # Move the window to position x/y
+        self.driver.set_window_position(width/2, 0)
 
     def goto_next_section(self, *args):
         if self.manager is not None:
@@ -1367,12 +1377,7 @@ class DocumentView(QWebView):  # {{{
             temp = f.name
             f.close()
             #webbrowser.open(temp,2,True)
-            driver = webdriver.Firefox()
-            # Resize the window to the screen width/height
-            driver.set_window_size(300, 500)
-            # Move the window to position x/y
-            driver.set_window_position(200, 200)
-            driver.get(temp)
+            self.driver.get(temp)
         if self.manager is not None and opos != self.document.ypos:
             self.manager.scrolled(self.scroll_fraction)
             self.manager.internal_link_clicked(prev_pos)
