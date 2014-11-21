@@ -4,7 +4,7 @@ __copyright__ = '2008, Kovid Goyal kovid@kovidgoyal.net'
 __docformat__ = 'restructuredtext en'
 
 # Imports {{{
-import os, math, json, re, urllib2, webbrowser, tempfile
+import os, math, json, re, urllib2, webbrowser, tempfile, platform
 from base64 import b64encode
 from functools import partial
 
@@ -29,6 +29,8 @@ from calibre.gui2.viewer.inspector import WebInspector
 from calibre.gui2.viewer.gestures import GestureHandler
 from calibre.ebooks.oeb.display.webview import load_html
 from calibre.constants import isxp, iswindows, DEBUG
+
+from selenium import webdriver
 # }}}
 
 def apply_settings(settings, opts):
@@ -1357,11 +1359,20 @@ class DocumentView(QWebView):  # {{{
         if currentText!="":
             players = getPlayersForKeyword(currentText)
         if players!="":
-            f = open(tempfile.gettempdir()+"/temp.html","w")
+            if platform.system()=='Windows':
+                f = open(tempfile.gettempdir()+"\\temp.html","w")
+            else:
+                f = open(tempfile.gettempdir()+"/temp.html","w")
             f.write(players)
             temp = f.name
             f.close()
-            webbrowser.open(temp,2,True)
+            #webbrowser.open(temp,2,True)
+            driver = webdriver.Firefox()
+            # Resize the window to the screen width/height
+            driver.set_window_size(300, 500)
+            # Move the window to position x/y
+            driver.set_window_position(200, 200)
+            driver.get(temp)
         if self.manager is not None and opos != self.document.ypos:
             self.manager.scrolled(self.scroll_fraction)
             self.manager.internal_link_clicked(prev_pos)
