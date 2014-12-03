@@ -68,9 +68,9 @@ def getPlayersForKeyword(keyword):
         keywords = item["keywords"]
         #default rank for unranked videos
         rank = 999
-        for keyword in keywords:
-            if keyword.find("{") != -1:
-                rank = int(keyword.strip("{}"))
+        for word in keywords:
+            if word.find("{") != -1:
+                rank = int(word.strip("{}"))
         ids.append((item["id"],rank))
     #use ids to build a list of embedded players
     players = "<h1>"
